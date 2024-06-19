@@ -1,0 +1,334 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "bd94b3d9",
+   "metadata": {},
+   "source": [
+    "# task 1 (Example)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "id": "217db2d8",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import logic\n",
+    "from logic import PropKB, expr\n",
+    "A, B, C = logic.expr('A, B, C')\n",
+    "expr1 = logic.expr(((A | \"==>\") | B) | \"==>\" | B)  #(A==>B)==>B\n",
+    "expr2 = logic.expr(A | \"==>\" | B)     # A ==> B\n",
+    "expr3 = logic.expr((~C) | \"==>\" | (~B))  #~C==>~B\n",
+    "negated_query = logic.expr(\"C\")  #(conclusion)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "id": "162427ef",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Conclusion 'C' follows from the given knowledge.\n"
+     ]
+    }
+   ],
+   "source": [
+    "\n",
+    "from logic import PropKB, expr\n",
+    "kb = PropKB()\n",
+    "\n",
+    "kb.tell(expr1)\n",
+    "kb.tell(expr2)\n",
+    "kb.tell(expr3)\n",
+    "\n",
+    "is_proven = logic.pl_resolution(kb,negated_query)\n",
+    "\n",
+    "if is_proven:\n",
+    "    print(\"Conclusion '{}' follows from the given knowledge.\".format(negated_query))\n",
+    "else:\n",
+    "    print(\"Conclusion '{}' cannot be proven from the given knowledge.\".format(negated_query))\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9e9a6a03",
+   "metadata": {},
+   "source": [
+    "# Task 2 (a)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "4f07fa3d",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "It ACS derivable from the knowlegde base? True\n"
+     ]
+    }
+   ],
+   "source": [
+    "import utils\n",
+    "import logic\n",
+    "from logic import PropKB, pl_resolution, expr\n",
+    "\n",
+    "kb = PropKB()\n",
+    "\n",
+    "kb.tell(expr('C240'))\n",
+    "\n",
+    "result = pl_resolution(kb, expr('ACS'))\n",
+    "\n",
+    "print(\"It ACS derivable from the knowlegde base?\", not result)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0a81c214",
+   "metadata": {},
+   "source": [
+    "# task 2 (b)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "id": "f0b7bb33",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from logic import FolKB, expr, fol_bc_ask\n",
+    "\n",
+    "# Define the rules and facts\n",
+    "rule= expr('(Human (x)' + '==>' + 'Mortal(x))')  #all humans are mortal\n",
+    "fact = expr('Human(Socrates)') # Socrates is a human\n",
+    "\n",
+    "kb = FolKB()\n",
+    "\n",
+    "kb.tell(rule)  \n",
+    "kb.tell(fact) "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "id": "04085d36",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Socrates is mortal.\n"
+     ]
+    }
+   ],
+   "source": [
+    "query = expr('Mortal(Socrates)')  # Prove that Socrates is mortal\n",
+    "\n",
+    "result = fol_bc_ask(kb, query)\n",
+    "if result:\n",
+    "    print(\"Socrates is mortal.\")\n",
+    "else:\n",
+    "    print(\"Unable to prove that Socrates is mortal.\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "841d29f7",
+   "metadata": {},
+   "source": [
+    "# task 2 (c)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "id": "0cb80120",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from logic import FolKB, expr\n",
+    "\n",
+    "kb = FolKB()\n",
+    "\n",
+    "kb.tell(expr('King(John)'))\n",
+    "kb.tell(expr('Person(Richard)'))\n",
+    "kb.tell(expr('King(x) ==> Person(x)'))\n",
+    "\n",
+    "def func(query):\n",
+    "    res = list(fol_bc_ask(kb, query))\n",
+    "    if res:\n",
+    "        return \"Yes\"\n",
+    "    else:\n",
+    "        return \"No\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "id": "c3ffd953",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Is John a King? Yes\n",
+      "Is Richard a Person? Yes\n",
+      "Is John a Person (from being a King)? Yes\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"Is John a King?\", func(expr('King(John)')))\n",
+    "print(\"Is Richard a Person?\", func(expr('Person(Richard)')))\n",
+    "print(\"Is John a Person (from being a King)?\", func(expr('Person(John)')))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b56ff3ca",
+   "metadata": {},
+   "source": [
+    "# Task 3"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "id": "b13f53b0",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "colonial west is criminal\n"
+     ]
+    }
+   ],
+   "source": [
+    "import logic\n",
+    "from logic import*\n",
+    "kb = FolKB()\n",
+    "kb.tell(expr('american(colonialwest)'))\n",
+    "kb.tell(expr('hostile(n)'))\n",
+    "kb.tell(expr('sells(colonialwest,m,n)'))\n",
+    "kb.tell(expr('missile(m)'))\n",
+    "kb.tell(expr('has(nano,m)'))\n",
+    "kb.tell(expr('crime(america)'))\n",
+    "kb.tell(expr('american(x) & hostile(y) & missile(m) & sells(x, m, y) ==> crime(x)'))\n",
+    "goal = (expr('crime(colonialwest)'))\n",
+    "\n",
+    "\n",
+    "\n",
+    "result = fol_fc_ask(kb,goal)\n",
+    "if result:\n",
+    "    print(\"West is Criminal\")\n",
+    "else:\n",
+    "    print(\"West is not Criminal\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "93603f3b",
+   "metadata": {},
+   "source": [
+    "# task 4"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "id": "6ed7389d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "kb = FolKB()\n",
+    "kb.tell(expr('King(x) & Greedy(x) ==> Evil(x)'))\n",
+    "kb.tell(expr('King(John)'))\n",
+    "kb.tell(expr('Greedy(John)')) \n",
+    "kb.tell(expr('King(Richard)'))\n",
+    "kb.tell(expr('Greedy(Richard)'))\n",
+    "kb.tell(expr('King(Father(John))'))\n",
+    "kb.tell(expr('Greedy(Father(John))'))\n",
+    "kb.tell(expr('Person(Richard)'))\n",
+    "kb.tell(expr('Person(John)'))\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 53,
+   "id": "db1a71f4",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "John is King\n",
+      "Richard is a Person\n",
+      "John is a Person\n"
+     ]
+    }
+   ],
+   "source": [
+    "result1 = fol_fc_ask(kb,'King(John)')\n",
+    "if result1:\n",
+    "    print(\"John is King\")\n",
+    "else: \n",
+    "    print(\"John is not a King\")\n",
+    "result2 = fol_fc_ask(kb,'Person(Richard)') \n",
+    "if result2:\n",
+    "    print(\"Richard is a Person\")\n",
+    "else:\n",
+    "    print(\"Richard is not a Person\")\n",
+    "result3 = fol_fc_ask(kb,'Person(John)') \n",
+    "if result:\n",
+    "    print(\"John is a Person\")\n",
+    "else:\n",
+    "    print(\"John is not a Person\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "fb719c5d",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
